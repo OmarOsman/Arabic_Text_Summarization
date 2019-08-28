@@ -10,9 +10,10 @@ class Dataset():
 
     def __init__(self , data_dir):
         self.data_dir = data_dir
-        self.train_dir_name = os.join(data_dir ,'/EASC-UTF-8/Articles/')
-        self.test_dir_name =  os.join(data_dir ,'/EASC-UTF-8/Articles/')
-        self.stop_word_file= os.join(data_dir ,'/arabic_stop.txt)
+        self.train_dir_name = os.path.join(data_dir ,'EASC-UTF-8/Articles/')
+        self.test_dir_name =  os.path.join(data_dir ,'EASC-UTF-8/Articles/')
+        self.sources_dir_name = os.path.join(data_dir ,'SOURCES.csv')
+        self.stop_word_file= os.path.join(data_dir ,'arabic_stop.txt)
         self.data = pd.DataFrame()
         nltk.download('punkt')
 
@@ -27,6 +28,15 @@ class Dataset():
                 allFiles.append(fullPath)
                     
         return allFiles
+
+    def get_wiki_titles(self):
+        src = pd.read_csv(self.sources_dir_name)
+        titles = src['URL'].str.split('/')
+        titles = titles.str[-1].values
+        return titles
+
+
+
 
     def read_dataset() :
         train_files_path = get_files_list(self.train_dir_name)
@@ -49,6 +59,7 @@ class Dataset():
             row_list.extend((train_file, sum1, sum2,sum3,sum4,sum5))
             data.loc[len(data)] = row_list
 
+        data['title'] = get_wiki_titles()
         self.data  = data
         return 
 
