@@ -37,7 +37,7 @@ class Preprocess():
 
     def get_article_content(self, article_path):
         if os.path.exists(article_path):
-            return open(article_pathj , 'r' ,encoding = 'utf-8').read()
+            return open(article_path , 'r' ,encoding = 'utf-8').read()
 
     def get_article_paragraphes(self,text) :
         return [paragraph for paragraph in text.split('\n') if len(paragraph) > 1]

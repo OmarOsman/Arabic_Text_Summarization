@@ -334,7 +334,7 @@ class Doc():
 
 
 
-    def summarize() :
+    def summarize(self) :
         features = [self.get_key_phrase_score ,self.sentence_location_score,self.get_centroid_score,
                     self.get_centrality_score ,self.sentence_length_score ,self.cue_phrases_score ,
                     self.strong_words_score]
