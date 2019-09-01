@@ -3,29 +3,28 @@ import nltk
 import numpy as np
 import pandas as pd 
 import subprocess
+import unicodedata as ud
+import pdb
 from scipy.spatial.distance import cosine
 from nltk.tokenize import word_tokenize
 from nltk.stem.isri import ISRIStemmer
 
 
 class Preprocess():
-    def __init__(self):
-        pass
+    def __init__(self ,stop_list_dir = r"tools\stop_words_list\stopwords.txt"):
+        self.stop_list_dir = stop_list_dir
 
-    def preprocess(org_df):
-        df = org_df.copy()
-        
+    def preprocess_df(org_df):
+        df = org_df.copy() 
         for col in df.columns :
             if df[col].dtype == np.object:
-                df[col] = df[col].apply(lambda x : get_clean_article(x))
-                df[col] = df[col].apply(lambda x : get_article_sentences(x))
+                df[col] = df[col].apply(lambda x : self.get_clean_article(x))
+                df[col] = df[col].apply(lambda x : self.get_article_sentences(x))
                         
         return df
 
   
 
-
-    ##~~Pickle helpers~~#
     def getPickleContent(self, pklFile):
         with open (pklFile, 'rb') as fp:
             itemlist = pickle.load(fp)
@@ -42,15 +41,46 @@ class Preprocess():
 
     def get_article_paragraphes(self,text) :
         return [paragraph for paragraph in text.split('\n') if len(paragraph) > 1]
+    
+    def get_cleaned_article_paragraphes(self,text) :
+        return [paragraph.replace('ppp',"") for paragraph in text.split('ppp') if len(paragraph) > 1]
 
 
-    def get_article_sentences(self, text ,token = "[.]+"): # tokenize based on token , default dot 
-        org_regex = "[.]+"
-        return [sentence for sentence in  re.split(org_regex,text)]
+    def get_article_sentences(self, text ,delim = "[.!?]+"): # tokenize based on token , default dot 
+        return [sentence.replace('ppp',"").strip() for sentence in  re.split(delim,text) if len(sentence) > 1]
+    
+    def get_para_sentences(self,paragraphs):
+        para_sent_list = [p.split('.') for p in paragraphs]
+        para_sent_list_new = []
+        for p in para_sent_list :
+            l = []
+            for s in p :
+                if len(s) > 1 : 
+                    l.append(s)
+            para_sent_list_new.append(l)
+            
+        return para_sent_list_new
+
+    def get_tokenized_word_sentences(self,sentences):
+        """
+        input : list of sentences 
+        """
+        sentence_list = []
+        for sentence in sentences :
+            words = word_tokenize(sentence.replace('ppp',""))
+            needed_words = []
+            for w in words:
+                if w != '\ufeff':
+                    needed_words.append(w)
+            filtered_sentence = ""
+            if len(needed_words) > 1 : 
+                filtered_sentence = " ".join(needed_words)
+                sentence_list.append(needed_words)
+        return sentence_list
 
 
     def stop_word_remove(self ,text):
-        ar_stop_list = open(list_dir, "r")
+        ar_stop_list = open(self.stop_list_dir, "r")
         stop_words = ar_stop_list.read().split('\n')
     
         words = word_tokenize(text)
@@ -60,14 +90,17 @@ class Preprocess():
                 needed_words.append(w)
                 
         filtered_sentence = " ".join(needed_words)
-      
-    return filtered_sentence
+        return filtered_sentence
 
     def normalize(self,text):
         text = re.sub(r"[إأٱآا]", "ا", text)
         text = re.sub(r"ى", "ي", text)
         text = re.sub(r"ؤ", "ء", text)
         text = re.sub(r"ئ", "ء", text)
+        text = text.replace("\"" ," ").strip("''")
+        text = text.replace('\ufeff' ," ")
+        text = text.replace("``" ," ").strip()
+        text = text.replace('\n' ,"ppp")
         #text = re.sub(r"ه", "ة", text) 
         #text = re.sub(r'[^ا-ي ]', "", text)
         
@@ -87,10 +120,9 @@ class Preprocess():
         
         lst = []
         for c in text :
-        if c == '.' : lst.append(c)
-        if not ud.category(c).startswith('P') : lst.append(c)
+            if c == '.': lst.append(c)
+            if not ud.category(c).startswith('P') : lst.append(c)
         text = ''.join(lst)
-        
         return text
 
 
@@ -106,7 +138,7 @@ class Preprocess():
         out = os.system(myCmd)
 
         path = 'outfile.txt'
-        text = get_article_content(path)
+        text = self.get_article_content(path)
         return text
 
 
@@ -124,11 +156,8 @@ class Preprocess():
 
 
     def get_clean_article(self, text):
-        text = normalize(text)
-        text = stop_word_remove(text)
-        text = stemming(text)
-        return  text
-
-
-    def getLimit(self, limit, num_sentences):
-        return ( limit * num_sentences ) / 100
+        text = self.normalize(text)
+        text = self.stop_word_remove(text)
+        #text =  self.stemming(text)
+        text = self.stemming_ISR(text)
+        return text

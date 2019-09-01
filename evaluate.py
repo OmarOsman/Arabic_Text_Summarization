@@ -5,7 +5,7 @@ import pandas as pd
 from rouge import Rouge 
 
 
-class Evaluate(self,original,summary):
+class Evaluate():
     def __init__(self):
         self.original = original
         self.summary = summary
