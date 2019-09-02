@@ -11,7 +11,7 @@ class Evaluate():
         self.summary = summary
 
 
-    def Rouge():
+    def Rouge(self):
         rouge = Rouge()
         scores = rouge.get_scores(self.original,self.summary)
         return scores

@@ -54,6 +54,12 @@ class Doc():
 
     def sentence2index(self):
         return { s:i for i,s in enumerate(self.sentences)}
+
+    def orgsentence2index(self):
+        return { s:i for i,s in enumerate(self.original_sentences)}
+
+
+    
     
     def get_sentences_length(self):
         return [len(sentence) for sentence in self.sentences]
@@ -334,13 +340,13 @@ class Doc():
 
 
 
-    def summarize(self) :
+    def summarize(self,max_legnth) :
         features = [self.get_key_phrase_score ,self.sentence_location_score,self.get_centroid_score,
                     self.get_centrality_score ,self.sentence_length_score ,self.cue_phrases_score ,
                     self.strong_words_score]
         lst = []
         sentence_scores = []
-        max_legnth_summary = 5
+        max_legnth_summary = len(self.golden_summary) if len(self.golden_summary) else max_legnth
         for index,sentence in enumerate(self.sentences) :
             total_score = 0
             for feature in features :

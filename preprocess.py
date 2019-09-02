@@ -8,13 +8,14 @@ import pdb
 from scipy.spatial.distance import cosine
 from nltk.tokenize import word_tokenize
 from nltk.stem.isri import ISRIStemmer
+from collections import defaultdict
 
 
 class Preprocess():
     def __init__(self ,stop_list_dir = r"tools\stop_words_list\stopwords.txt"):
         self.stop_list_dir = stop_list_dir
 
-    def preprocess_df(org_df):
+    def preprocess_df(self,org_df):
         df = org_df.copy() 
         for col in df.columns :
             if df[col].dtype == np.object:
@@ -22,6 +23,8 @@ class Preprocess():
                 df[col] = df[col].apply(lambda x : self.get_article_sentences(x))
                         
         return df
+
+    
 
   
 
@@ -152,6 +155,44 @@ class Preprocess():
         stemmed_text = " ".join(stemmed_words)
         return stemmed_text
 
+    
+    def get_golden_summary(self,df):
+        
+
+
+        for index, row in flights.head().iterrows():
+            org_summary = df['Orignal'][index]
+            sumar_1= df['Summary1'][index]
+            sumar_2= df['Summary2'][index]
+            sumar_3= df['Summary3'][index]
+            sumar_4= df['Summary4'][index]
+            sumar_5= df['Summary5'][index]
+            all_summaries = [sumar_1,sumar_2,sumar_3,sumar_4,sumar_5]
+            sent = self.get_article_sentences(self.get_clean_no_stemming(org_summary))
+            sent_idx = { s:i for i,s in enumerate(sent) }
+
+
+            res = []
+            for sam in range(len(all_summaries)):
+                s = self.get_article_sentences(self.get_clean_no_stemming(sam))
+                res.append((sent_idx[s],s))
+
+            pdb.set_trace()
+            dic = defaultdict(int)
+            golden_list = []
+            for i in range (len (res)):
+                for l in range(len(res[i])):
+                    dic[res[1][i][l]]+=1
+
+            pdb.set_trace()
+            return dic
+
+            
+
+
+
+
+
 
 
 
@@ -161,3 +202,9 @@ class Preprocess():
         #text =  self.stemming(text)
         text = self.stemming_ISR(text)
         return text
+
+    def get_clean_no_stemming(self,text):
+        text = self.normalize(text)
+        text = self.stop_word_remove(text)
+        return text
+
