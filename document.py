@@ -362,8 +362,9 @@ class Doc():
         sum_list = [self.original_sentences[x] for (x,y) in last_summary]
         text_list = ".".join(sum_list)
         return text_list
+    
+    
 
-        
     
         
 

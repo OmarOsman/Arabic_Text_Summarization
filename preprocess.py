@@ -104,6 +104,7 @@ class Preprocess():
         text = text.replace('\ufeff' ," ")
         text = text.replace("``" ," ").strip()
         text = text.replace('\n' ,"ppp")
+        text = text.strip()
         #text = re.sub(r"ه", "ة", text) 
         #text = re.sub(r'[^ا-ي ]', "", text)
         
@@ -156,11 +157,9 @@ class Preprocess():
         return stemmed_text
 
     
+    """
     def get_golden_summary(self,df):
-        
-
-
-        for index, row in flights.head().iterrows():
+        for index, row in df.iterrows():
             org_summary = df['Orignal'][index]
             sumar_1= df['Summary1'][index]
             sumar_2= df['Summary2'][index]
@@ -168,16 +167,22 @@ class Preprocess():
             sumar_4= df['Summary4'][index]
             sumar_5= df['Summary5'][index]
             all_summaries = [sumar_1,sumar_2,sumar_3,sumar_4,sumar_5]
-            sent = self.get_article_sentences(self.get_clean_no_stemming(org_summary))
+            sent = self.get_article_sentences(org_summary)
+            sent_idx = 
             sent_idx = { s:i for i,s in enumerate(sent) }
 
-
-            res = []
-            for sam in range(len(all_summaries)):
-                s = self.get_article_sentences(self.get_clean_no_stemming(sam))
-                res.append((sent_idx[s],s))
-
             pdb.set_trace()
+            res = []
+            for summary in all_summaries:
+                s = self.get_article_sentences(summary)
+                idx = []
+                for sent in s :
+                    if sent in  sent_idx[sent] :
+                        idx.append(sent_idx[sent])
+                        
+                res.append(([sent_idx[sent] ] ,s))
+
+            
             dic = defaultdict(int)
             golden_list = []
             for i in range (len (res)):
@@ -186,13 +191,41 @@ class Preprocess():
 
             pdb.set_trace()
             return dic
+    """
+
+    def build_golden_summary(self,df,max_len):
+        df['golden'] = ""
+        for index, row in df.iterrows():
+            org_summary = df['Orignal'][index]
+            sumar_1= df['Summary1'][index]
+            sumar_2= df['Summary2'][index]
+            sumar_3= df['Summary3'][index]
+            sumar_4= df['Summary4'][index]
+            sumar_5= df['Summary5'][index]
+            all_summaries = [sumar_1,sumar_2,sumar_3,sumar_4,sumar_5]
+            
+            #pdb.set_trace()
+            res = []
+            for summary in all_summaries:
+                s = self.get_article_sentences(summary)
+                res.append(s)
 
             
-
-
-
-
-
+            dic = defaultdict(int)
+            golden_list = []
+            for i in range (len (res)):
+                for l in range(len(res[i])):
+                    dic[res[i][l]]+=1
+                    
+            for k,v in dic.items():
+                if v>=2 : golden_list.append(k)
+                    
+            golden_list = golden_list[:max_len]
+            df['golden'][index] = ''.join(golden_list) 
+            
+        return
+           
+  
 
 
 
